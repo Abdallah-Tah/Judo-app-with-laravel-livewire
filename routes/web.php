@@ -33,5 +33,22 @@ Route::middleware([
     Route::get('/players', function () {
         return view('players.index');
     })->name('players');
+
+
+    //Route::resource('clubs', \App\Http\Controllers\ClubController::class);
+
+    Route::get('/clubs/edit/', function ($id) {
+        return view('clubs.edit', compact('id'));
+    })->name('clubs.edit');
+
+    Route::get('/clubs/delete', function () {
+        return view('clubs.delete');
+    })->name('clubs.destroy');
+
+   /*  Route::get('/clubs', function ($id) {
+        return view('clubs.show', compact('id'));
+    })->name('clubs.show'); */
+
+
    
 });

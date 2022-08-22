@@ -2,17 +2,17 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Club;
 use App\Models\Player;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 class Players extends Component
 {
-    use WithPagination;
-    public $name;
-    public $user_id;
-    public $playerId;
-   
+    use WithPagination, WithFileUploads;
+    public $playerId, $name, $dob, $club_id, $address, $phone, $email, $user_id, $photo;
+    public $clubs;
 
     public $modalFormVisible = false;
     public $modalConfirmDeleteVisible = false;
@@ -41,7 +41,7 @@ class Players extends Component
         $this->resetInput();
         $this->modalFormVisible = true;
     }
-    
+
     /**
      * updateShowModal
      *
@@ -50,9 +50,10 @@ class Players extends Component
      */
     public function editShowModal($id)
     {
-        $this->playerId = $id;
+        $this->PlayerId = $id;
         $this->modalFormVisible = true;
         $this->loadPlayer();
+        
     }
 
 
@@ -65,8 +66,9 @@ class Players extends Component
     public function deleteShowModal($id)
     {
         $this->playerId = $id;
-        $this->name = Player::find($id)->name;
+        $this->name = Player::where('user_id', auth()->id())->where('id', $id)->first()->name;
         $this->modalConfirmDeleteVisible = true;
+        $this->resetInput();
     }
 
 
@@ -77,13 +79,11 @@ class Players extends Component
      */
     public function delete()
     {
-        Player::destroy($this->playerId);
+        Player::destroy($this->playerId );
         $this->modalConfirmDeleteVisible = false;
-        $this->resetPage();
-
-        session()->flash('message', 'The Player has been deleted.');
+         session()->flash('message', 'Player Deleted Successfully.');
     }
-  
+
     /**
      * loadPlayer
      *
@@ -91,8 +91,15 @@ class Players extends Component
      */
     public function loadPlayer()
     {
-        $Player = Player::where('user_id', auth()->user()->id)->find($this->playerId);
+        $Player = Player::where('user_id', auth()->user()->id)->find($this->PlayerId);
         $this->name = $Player->name;
+        $this->dob = $Player->dob;
+        $this->club_id = $Player->club_id;
+        $this->address = $Player->address;
+        $this->phone = $Player->phone;
+        $this->email = $Player->email;
+        $this->user_id = $Player->user_id;
+        $this->photo = $Player->photo;
     }
 
     /**
@@ -102,14 +109,33 @@ class Players extends Component
      */
     public function createPlayer()
     {
-        $this->validate($this->rules());
-        Player::create($this->modelData());
+        $this->validate([
+            'name' => 'required|string|max:70',
+            'dob' => 'required|date',
+            'address' => 'required|string|max:70',
+            'phone' => 'required|string|max:20',
+            'email' => 'required|email|max:70|unique:players',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $Player = new Player();
+        $Player->name = $this->name;
+        $Player->dob = $this->dob;
+        $Player->club_id = $this->club_id;
+        $Player->address = $this->address;
+        $Player->phone = $this->phone;
+        $Player->email = $this->email;
+        $Player->user_id = auth()->user()->id;
+        $Player->photo = $this->photo->store('public');
+        $Player->save();
+       // Player::create($this->modelData());
         $this->modalFormVisible = false;
         $this->resetInput();
+        $this->resetPage();
     }
 
 
-    
+
     /**
      * read
      *
@@ -117,17 +143,23 @@ class Players extends Component
      */
     public function getPlayers()
     {
-        return Player::paginate(10);
+        return Player::where('user_id', auth()->user()->id)->paginate(10);
     }
 
 
-    public function modelData()
+   /*  public function modelData()
     {
         return [
             'name' => $this->name,
+            'dob' => $this->dob,
+            'club_id' => $this->club_id,
+            'address' => $this->address,
+            'phone' => $this->phone,
+            'email' => $this->email,
             'user_id' => auth()->user()->id,
+            'photo' => $this->photo,
         ];
-    }
+    } */
 
     /**
      * resetInput
@@ -136,9 +168,15 @@ class Players extends Component
      */
     public function resetInput()
     {
-        $this->playerId = null;
+        $this->PlayerId = null;
         $this->name = null;
         $this->user_id = null;
+        $this->dob = null;
+        $this->club_id = null;
+        $this->address = null;
+        $this->phone = null;
+        $this->email = null;
+        $this->photo = null;
     }
 
     /**
@@ -164,8 +202,9 @@ class Players extends Component
 
     public function render()
     {
-        return view('livewire.players',[
+        return view('livewire.players', [
             'players' => $this->getPlayers(),
+            'clubs' => Club::all(),
         ]);
     }
 }

@@ -1,12 +1,22 @@
 <div class="p-6">
-    
+
     <div class="flex justify-end items-center px-4 text-right sm:px-6">
         <x-jet-button wire:click="createShowModal">
-            {{ __('Create Club') }}
+            {{ __('Create Club') }} 
         </x-jet-button>
     </div>
 
+    @if (session()->has('message'))
+        <div class="bg-teal-100 rounded-b text-teal-900 px-4 py-4 shadow-md my-3" role="alert">
+            <div class="flex">
+                <div>
+                    <h4>{{ session('message') }}</h4>
+                </div>
+            </div>
+        </div>
+    @endif
 
+    <br />
 
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50 text-center">
@@ -35,7 +45,8 @@
                             <x-jet-button wire:click="editShowModal({{ $club->id }})" wire:loading.attr="disabled">
                                 {{ __('Edit') }}
                             </x-jet-button>
-                            <x-jet-danger-button wire:click="deleteShowModal({{ $club->id }})" wire:loading.attr="disabled">
+                            <x-jet-danger-button wire:click="deleteShowModal({{ $club->id }})"
+                                wire:loading.attr="disabled">
                                 {{ __('Delete') }}
                             </x-jet-danger-button>
                         </td>
@@ -62,7 +73,7 @@
 
     <x-jet-dialog-modal wire:model="modalFormVisible">
         <x-slot name="title">
-            {{ __('Club') }} {{ $clubId }}
+            {{ __('Club') }} <strong>{{ $name }}</strong>
         </x-slot>
 
         <x-slot name="content">
@@ -102,7 +113,8 @@
         </x-slot>
 
         <x-slot name="content">
-            {{ __("Are you sure you want to delete this")}} {{$name }} {{ __("? Once the club is deleted, all of its resources and data will be permanently deleted.") }}
+            {{ __('Are you sure you want to delete this') }} <strong>{{ $name }}</strong>
+            {{ __('? Once the club is deleted, all of its resources and data will be permanently deleted.') }}
         </x-slot>
 
         <x-slot name="footer">

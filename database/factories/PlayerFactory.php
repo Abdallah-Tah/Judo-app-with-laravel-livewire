@@ -18,12 +18,8 @@ class PlayerFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'club_id' => function () {
-                return ClubFactory::new()->create()->id;
-            },
-            'user_id' => function () {
-                return UserFactory::new()->create()->id;
-            },
+            'club_id' => $this->faker->numberBetween(1, 160),
+            'user_id' => 1,
             'email' => $this->faker->email,
             'phone' => $this->faker->phoneNumber,
             'address' => $this->faker->address,
